@@ -14,6 +14,12 @@ export function TRPCProvider({ children }: TRPCProviderProps) {
       links: [
         httpBatchLink({
           url: import.meta.env.VITE_SERVER_URL,
+          fetch(url, options) {
+            return fetch(url, {
+              ...options,
+              credentials: "include",
+            });
+          },
         }),
       ],
     })
