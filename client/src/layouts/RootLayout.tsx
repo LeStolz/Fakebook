@@ -1,7 +1,7 @@
-import { Loading } from "@/components/ui/Loading";
 import { t } from "@/lib/trpc";
 import { useState } from "react";
 import { Navigate, Outlet } from "react-router-dom";
+import { Loading } from "@/components/ui/Loading";
 
 export function RootLayout() {
   const [status, setStatus] = useState("LOADING");
@@ -19,7 +19,7 @@ export function RootLayout() {
   });
 
   if (status === "LOADING") {
-    return <Loading className="w-32 h-32" screen />;
+    return <Loading className="w-24 h-24" screen />;
   } else if (status === "UNAUTHORIZED") {
     return <Navigate to="/login" />;
   } else {

@@ -59,38 +59,36 @@ export function Signup() {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen">
-      <Card className="grow max-w-sm">
-        <CardHeader>
-          <CardTitle>Sign up</CardTitle>
-          <CardDescription>Sign up to start exploring!</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit}>
-            <Label>
-              Email
-              <Input type="email" required ref={emailRef} className="mb-2" />
-            </Label>
-            <Label>
-              Password
-              <Input type="password" required ref={passwordRef} />
-            </Label>
-            <Button
-              type="submit"
-              disabled={signupUser.isLoading}
-              className="mt-6 w-full text-md"
-            >
-              {signupUser.isLoading ? <Loading /> : "Sign up"}
-            </Button>
-          </form>
-        </CardContent>
-        <CardFooter className="justify-center">
-          Already have an account?
-          <Button variant="link" className="pl-1">
-            <Link to="/login">Log in now!</Link>
+    <Card className="grow max-w-sm">
+      <CardHeader>
+        <CardTitle>Sign up</CardTitle>
+        <CardDescription>Sign up to start exploring!</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit}>
+          <Label>
+            Email
+            <Input type="email" required ref={emailRef} className="mb-2" />
+          </Label>
+          <Label>
+            Password
+            <Input type="password" required ref={passwordRef} />
+          </Label>
+          <Button
+            type="submit"
+            disabled={signupUser.isLoading}
+            className="mt-6 w-full text-md"
+          >
+            {signupUser.isLoading ? <Loading /> : "Sign up"}
           </Button>
-        </CardFooter>
-      </Card>
-    </div>
+        </form>
+      </CardContent>
+      <CardFooter className="justify-center">
+        Already have an account?
+        <Button variant="link" className="pl-1">
+          <Link to="/login">Log in now!</Link>
+        </Button>
+      </CardFooter>
+    </Card>
   );
 }

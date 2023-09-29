@@ -21,6 +21,7 @@ export function Loading({ className, full, screen }: LoadingProps) {
       ) : (
         <Loader2Icon className={cn("animate-spin", className)}></Loader2Icon>
       )}
+      <span className="sr-only">Loading</span>
     </>
   );
 }

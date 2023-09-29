@@ -11,7 +11,7 @@ const protectedMiddleware = t.middleware(async ({ ctx, next }) => {
   if (email == null || user == null) {
     throw new TRPCError({
       code: "UNAUTHORIZED",
-      message: "Not authenticated",
+      message: "You have to be logged in to perform this action",
     });
   }
 
@@ -22,7 +22,7 @@ const privateMiddleware = protectedMiddleware.unstable_pipe(({ ctx, next }) => {
   if (!ctx.user.isAdmin) {
     throw new TRPCError({
       code: "FORBIDDEN",
-      message: "Not authorized",
+      message: "You are not authorized to perform this action",
     });
   }
 
@@ -57,7 +57,7 @@ export const users = t.router({
 
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Could not create user",
+          message: "Signup failed. Please try again later",
         });
       }
     }),
@@ -70,7 +70,7 @@ export const users = t.router({
       if (email == null || password == null || user == null) {
         throw new TRPCError({
           code: "UNAUTHORIZED",
-          message: "Not authenticated",
+          message: "Email and password do not match",
         });
       }
 

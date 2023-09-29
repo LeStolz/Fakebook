@@ -10,8 +10,10 @@ import { users } from "./routes/users";
 config();
 
 mongoose.connect(process.env.DATABASE_URL!);
-mongoose.connection.on("error", (error: Error) => console.error(error));
-mongoose.connection.once("open", () => console.log("Connected to database"));
+mongoose.connection.on("error", (error) => console.error(error));
+mongoose.connection.once("open", () =>
+  console.log("Server connected to database")
+);
 
 const appRouter = t.router({
   users,
