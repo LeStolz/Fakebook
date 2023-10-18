@@ -5,11 +5,10 @@ import { NavbarLayout } from "./layouts/NavbarLayout";
 import { Login } from "./pages/Login";
 import { Signup } from "./pages/Signup";
 import { Home } from "./pages/Home";
-import { AuthProvider } from "./contexts/AuthContext";
 
 export const router = createBrowserRouter([
   {
-    element: <ContextProviders />,
+    element: <Outlet />,
     children: [
       {
         element: <AuthLayout />,
@@ -30,11 +29,3 @@ export const router = createBrowserRouter([
     ],
   },
 ]);
-
-function ContextProviders() {
-  return (
-    <AuthProvider>
-      <Outlet />
-    </AuthProvider>
-  );
-}
