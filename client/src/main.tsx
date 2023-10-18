@@ -5,12 +5,17 @@ import { RouterProvider } from "react-router-dom";
 import { router } from "./router";
 import "./index.css";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { Toaster } from "react-hot-toast";
+import { ThemeProvider } from "./contexts/ThemeContext";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <TRPCProvider>
-      <RouterProvider router={router} />
-      <ReactQueryDevtools />
+      <ThemeProvider storageKey="vite-ui-theme">
+        <RouterProvider router={router} />
+        <ReactQueryDevtools />
+        <Toaster />
+      </ThemeProvider>
     </TRPCProvider>
   </React.StrictMode>
 );
