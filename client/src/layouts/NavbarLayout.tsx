@@ -13,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/DropdownMenu";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/Avatar";
 import { t } from "@/lib/trpc";
 import toast from "react-hot-toast";
 import { Outlet, useNavigate } from "react-router-dom";
@@ -63,7 +63,7 @@ export function NavbarLayout() {
                     asChild
                   >
                     <Avatar>
-                      <AvatarImage src={user.data?.email} />
+                      <AvatarImage />
                       <AvatarFallback>
                         <User2 />
                       </AvatarFallback>
@@ -71,8 +71,11 @@ export function NavbarLayout() {
                   </DropdownMenuTrigger>
 
                   <DropdownMenuContent className="mt-3" align="end">
-                    <DropdownMenuItem onClick={() => {}}>
-                      <NavigationMenuLink className="flex items-center gap-2">
+                    <DropdownMenuItem>
+                      <NavigationMenuLink
+                        href="#"
+                        className="flex items-center gap-2"
+                      >
                         <User2 className="w-4 h-4" />
                         {user.data?.email}
                       </NavigationMenuLink>

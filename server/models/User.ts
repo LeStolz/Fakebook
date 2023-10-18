@@ -15,6 +15,30 @@ const UserSchema = new mongoose.Schema({
     required: true,
     default: false,
   },
+  firstname: {
+    type: String,
+    required: true,
+  },
+  lastname: {
+    type: String,
+    required: true,
+  },
+  birthdate: {
+    type: Date,
+    required: true,
+  },
+  gender: {
+    type: String,
+    enum: ["Male", "Female", "Other"],
+  },
+  createdAt: {
+    type: Date,
+    default: new Date(),
+    required: true,
+  },
+  refreshToken: {
+    type: String,
+  },
 });
 
 export const User = mongoose.model("User", UserSchema);

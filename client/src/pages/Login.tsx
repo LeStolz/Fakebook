@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/Label";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { Link, useNavigate } from "react-router-dom";
-import { FormEvent, createRef } from "react";
+import { FormEvent } from "react";
 import toast from "react-hot-toast";
 import { t } from "@/lib/trpc";
 import { Loading } from "@/components/ui/Loading";
@@ -31,19 +31,22 @@ export function Login() {
     },
   });
 
-  const emailRef = createRef<HTMLInputElement>();
-  const passwordRef = createRef<HTMLInputElement>();
-
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     if (!event.currentTarget.checkValidity()) {
       event.stopPropagation();
+      toast.error("Invalid email or password");
       return;
     }
 
-    const email = emailRef.current?.value;
-    const password = passwordRef.current?.value;
+    const formData = new FormData(event.currentTarget).entries();
+    const data = Object.fromEntries(formData) as {
+      email: string;
+      password: string;
+    };
+
+    const { email, password } = data;
 
     if (email == null || email === "") {
       toast.error("Email is required");
@@ -68,11 +71,11 @@ export function Login() {
         <form onSubmit={handleSubmit}>
           <Label>
             Email
-            <Input type="email" required ref={emailRef} className="mb-2" />
+            <Input type="email" name="email" required className="mb-2" />
           </Label>
           <Label>
             Password
-            <Input type="password" required ref={passwordRef} />
+            <Input type="password" name="password" required />
           </Label>
           <Button
             type="submit"

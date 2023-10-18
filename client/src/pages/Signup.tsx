@@ -6,14 +6,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/Card";
-import { Label } from "@/components/ui/Label";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { Link, useNavigate } from "react-router-dom";
-import { FormEvent, createRef } from "react";
+import { FormEvent } from "react";
 import toast from "react-hot-toast";
 import { t } from "@/lib/trpc";
 import { Loading } from "@/components/ui/Loading";
+import { InputPlaceholder } from "@/components/ui/InputPlaceholder";
 
 export function Signup() {
   const navigate = useNavigate();
@@ -31,49 +31,112 @@ export function Signup() {
     },
   });
 
-  const emailRef = createRef<HTMLInputElement>();
-  const passwordRef = createRef<HTMLInputElement>();
-
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     if (!event.currentTarget.checkValidity()) {
       event.stopPropagation();
+      toast.error("Invalid information");
       return;
     }
 
-    const email = emailRef.current?.value;
-    const password = passwordRef.current?.value;
+    const formData = new FormData(event.currentTarget).entries();
+    const data = Object.fromEntries(formData) as {
+      firstname: string;
+      lastname: string;
+      email: string;
+      repeatedEmail: string;
+      password: string;
+      birthdate: string;
+    };
 
-    if (email == null || email === "") {
+    const { firstname, lastname, email, repeatedEmail, password, birthdate } =
+      data;
+
+    if (!email) {
       toast.error("Email is required");
       return;
     }
 
-    if (password == null || password === "") {
+    if (!repeatedEmail || repeatedEmail !== email) {
+      toast.error("Emails do not match");
+      return;
+    }
+
+    if (!password) {
       toast.error("Password is required");
       return;
     }
 
-    signupUser.mutate({ email, password });
+    if (!firstname || !lastname) {
+      toast.error("Name is required");
+      return;
+    }
+
+    if (!birthdate) {
+      toast.error("Birthdate is required");
+      return;
+    }
+
+    signupUser.mutate({
+      firstname,
+      lastname,
+      email,
+      password,
+      birthdate,
+    });
   };
 
   return (
-    <Card className="grow max-w-sm">
+    <Card className="grow max-w-md">
       <CardHeader>
         <CardTitle>Sign up</CardTitle>
-        <CardDescription>Sign up to start exploring!</CardDescription>
+        <CardDescription>It's quick and easy!</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit}>
-          <Label>
-            Email
-            <Input type="email" required ref={emailRef} className="mb-2" />
-          </Label>
-          <Label>
-            Password
-            <Input type="password" required ref={passwordRef} />
-          </Label>
+          <div className="flex gap-3 mb-3">
+            <Input
+              type="text"
+              name="firstname"
+              required
+              placeholder="First name"
+            />
+            <Input
+              type="text"
+              name="lastname"
+              required
+              placeholder="Last name"
+            />
+          </div>
+          <Input
+            type="email"
+            name="email"
+            required
+            placeholder="Email address"
+            className="mb-3"
+          />
+          <Input
+            type="email"
+            name="repeatedEmail"
+            required
+            placeholder="Repeat email address"
+            className="mb-3"
+          />
+          <Input
+            type="password"
+            name="password"
+            required
+            placeholder="Password"
+            className="mb-3"
+          />
+          <InputPlaceholder
+            type="date"
+            name="birthdate"
+            required
+            placeholder="Birthdate"
+            className="mb-3"
+          />
           <Button
             type="submit"
             disabled={signupUser.isLoading}

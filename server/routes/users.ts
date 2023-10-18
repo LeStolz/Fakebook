@@ -3,19 +3,32 @@ import { t } from "../trpc";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { Error } from "mongoose";
+import jwt from "jsonwebtoken";
+
+const cookieOptions = {
+  secure: true,
+  httpOnly: true,
+  signed: true,
+};
 
 const protectedMiddleware = t.middleware(async ({ ctx, next }) => {
-  const { email } = ctx.req.signedCookies.authorization || {};
-  const user = await User.findOne({ email });
+  try {
+    const token = ctx.req.signedCookies.token;
+    const { sub: id } = jwt.verify(token, process.env.JWT_SECRET!) || {};
 
-  if (email == null || user == null) {
+    const user = await User.findById(id);
+
+    if (id == null || user == null) {
+      throw null;
+    }
+
+    return next({ ctx: { user: user.toObject() } });
+  } catch {
     throw new TRPCError({
       code: "UNAUTHORIZED",
       message: "You have to be logged in to perform this action",
     });
   }
-
-  return next({ ctx: { user: user.toObject() } });
 });
 
 const privateMiddleware = protectedMiddleware.unstable_pipe(({ ctx, next }) => {
@@ -32,16 +45,45 @@ const privateMiddleware = protectedMiddleware.unstable_pipe(({ ctx, next }) => {
 export const protectedProcedure = t.procedure.use(protectedMiddleware);
 export const privateProcedure = t.procedure.use(privateMiddleware);
 
+async function createToken(sub: string) {
+  const token = jwt.sign({ sub }, process.env.JWT_SECRET!, {
+    expiresIn: "1h",
+  });
+
+  return token;
+}
+
+async function createRefreshToken(sub: string) {
+  const refreshToken = jwt.sign({ sub }, process.env.JWT_REFRESH_SECRET!);
+
+  await User.findByIdAndUpdate(sub, { $set: { refreshToken } });
+
+  return refreshToken;
+}
+
 export const users = t.router({
   signup: t.procedure
-    .input(z.object({ email: z.string(), password: z.string() }))
-    .mutation(async ({ ctx, input: { email, password } }) => {
+    .input(
+      z.object({
+        firstname: z.string(),
+        lastname: z.string(),
+        email: z.string().email(),
+        password: z.string(),
+        birthdate: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
       try {
-        const user = await User.create({ email, password });
+        const user = await User.create(input);
 
-        ctx.res.cookie("authorization", { email }, { signed: true });
+        ctx.res.cookie("token", await createToken(user.id), cookieOptions);
+        ctx.res.cookie(
+          "refreshToken",
+          await createRefreshToken(user.id),
+          cookieOptions
+        );
 
-        return await user.toObject();
+        return { ...(await user.toObject()), password: undefined };
       } catch (error: any) {
         if (error instanceof Error) {
           throw new TRPCError({
@@ -74,17 +116,64 @@ export const users = t.router({
         });
       }
 
-      ctx.res.cookie("authorization", { email }, { signed: true });
+      ctx.res.cookie("token", await createToken(user.id), cookieOptions);
+      ctx.res.cookie(
+        "refreshToken",
+        await createRefreshToken(user.id),
+        cookieOptions
+      );
 
-      return await user.toObject();
+      return { ...(await user.toObject()), password: undefined };
     }),
 
   logout: protectedProcedure.mutation(async ({ ctx }) => {
-    ctx.res.clearCookie("authorization");
+    ctx.res.clearCookie("token");
+    ctx.res.clearCookie("refreshToken");
+
+    await User.findByIdAndUpdate(ctx.user._id, {
+      $set: { refreshToken: undefined },
+    });
+
     return true;
   }),
 
+  refreshToken: t.procedure.query(async ({ ctx }) => {
+    const refreshToken = ctx.req.signedCookies.refreshToken;
+
+    if (refreshToken == null) {
+      throw new TRPCError({
+        code: "UNAUTHORIZED",
+        message: "You have to be logged in to perform this action",
+      });
+    }
+
+    if ((await User.findOne({ refreshToken })) == null) {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "You are not authorized to perform this action",
+      });
+    }
+
+    try {
+      const { sub: id } =
+        jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET!) || {};
+
+      if (id == null || typeof id != "string") {
+        throw null;
+      }
+
+      ctx.res.cookie("token", await createToken(id), cookieOptions);
+
+      return true;
+    } catch {
+      throw new TRPCError({
+        code: "UNAUTHORIZED",
+        message: "You have to be logged in to perform this action",
+      });
+    }
+  }),
+
   getCurrent: protectedProcedure.query(async ({ ctx }) => {
-    return ctx.user;
+    return { ...ctx.user, password: undefined };
   }),
 });
